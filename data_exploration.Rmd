@@ -22,6 +22,8 @@ subm <- rio::import("vfsg_submissions.csv") %>%
 
          )
 
+print("TO DO: consolidate city names. E.g. Washington D.C.")
+
 
 ```
 
@@ -88,6 +90,43 @@ ggplot(toplot, aes(x = Charcity, y = n)) +
   geom_col() + coord_flip() + theme_minimal() +
   ggtitle("Charity's cities (not done by distinct charity)")
 ```
+
+
+## Brainstorming
+
+### Network
+- on a map?
+- very light map or no map plotted but you recognize the shape?
+- node = participants_city (or participant?), link = project, size = n_participants from city (or n_project?)
+- add the city of the charity on another city on the map
+- facet by projects (the network of each project), or all in one? 
+
+__Examples__  
+
+- https://stackoverflow.com/questions/33122456/r-creating-a-world-network-map
+- https://kateto.net/sunbelt2019 
+- https://www.r-bloggers.com/2018/05/three-ways-of-visualizing-a-graph-on-a-map/
+- https://mran.revolutionanalytics.com/snapshot/2016-03-14/web/packages/GGally/vignettes/ggnetworkmap.html (old?)
+- https://rpubs.com/BrendanKnapp/GeospatialNetworkPlotting
+- 
+
+### Other
+- time serie of number of participants
+- 
+
+## To Keep in Mind
+- the goals (incite new volunteers or encourage charities to viz data)
+- show impact with a few citation?
+- have one clear message for the viz
+- 
+
+
+
+
+
+
+
+
 
 
 
