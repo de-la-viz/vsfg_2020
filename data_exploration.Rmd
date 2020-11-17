@@ -19,10 +19,9 @@ subm <- rio::import("vfsg_submissions.csv") %>%
          Volunteer = as.factor(`Name of volunteer`),
          URL = ifelse(stringr::str_detect(string = URL, pattern = "http"), URL, NA),
          `Volunteer City` = ifelse(stringr::str_detect(string = `Volunteer City`, pattern = "nknown"), NA, `Volunteer City`)
-
          )
 
-print("TO DO: consolidate city names. E.g. Washington D.C.")
+print("TO DO: consolidate city names. E.g. Washington D.C., London, , Kawasaki-shi")
 
 
 ```
@@ -122,13 +121,69 @@ __Examples__
 
 
 
+## Let's try to build a network for one project
+
+
+```{r}
+
+awb <- subm %>% 
+  filter(`Name of charity/Project` == 'Academics Without Borders') %>%
+  select(City = `Volunteer City`) %>%
+  drop_na(City)
+
+nodes <- awb$City %>% unique() %>% as_factor()
+
+city_count <- awb %>% group_by(City) %>% count() # unique()
+
+edges <- awb %>%
+  mutate(Destination = paste(nodes, collapse=',')) %>%
+  separate_rows(Destination) %>%
+  unique() %>%
+  left_join(city_count, by = 'City') %>%
+  # mutate(from = as_factor(City), to = as_factor(Destination)) %>%
+  select(from = City, to = Destination, weights = n)
+
+# basic network:
+library(tidygraph)
+library(ggraph)
+
+tibble()
+graph <- as_tbl_graph(edges)
+
+# test <- make_graph(edges$from) # awb$City)
+df_test <- tibble()
+test <- graph_from_data_frame(edges)
+
+ggraph(graph, layout = 'graphopt', ) + 
+  geom_edge_link() + 
+  geom_node_point(size = 4) + 
+  theme_graph()
+
+```
+
+
+```{r}
+# geolocalize the cities:
+library(maps)
+
+world_cities <- maps::world.cities %>% rename(City = name)
+
+vol_cities <- subm %>% 
+  filter(`Name of charity/Project` == 'Academics Without Borders') %>%
+  select(Country = `Volunteer Country`, City = `Volunteer City`) %>%
+  drop_na(City) %>%
+  left_join(world_cities, by = 'City')
+
+
+world_map <- map_data("world")
 
 
 
 
+ggplot(world_map, aes(x = long, y = lat, group = group)) +
+  geom_polygon(fill = "white", colour = "black") + 
+  theme_bw()
 
-
-
-
+```
 
 
