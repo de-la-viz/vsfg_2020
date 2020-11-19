@@ -8,6 +8,7 @@ library(stringr)
 library(maps)
 library(tidygraph)
 library(ggraph)
+library(assertthat)
 
 subm <- rio::import("vfsg_submissions.csv") %>% 
   mutate(ProjectDate = format(lubridate::parse_date_time(`Date of project`, orders = c("my")), "%Y-%m"),
@@ -92,7 +93,7 @@ vol_cities_geo <- subm %>%
 
 vol_cities <- vol_cities_geo %>% 
   left_join(world_cities, by = c('City', 'Country')) %>%
-  filter( # the left join added some annoying ducplicates because a few cities have the same name and country...
+  filter( # the left join added some annoying duplicates because a few cities have the same name and country...
     !(City == 'Munster' & lat == 53.00), # we assume the city and not small village
     !(City == 'Richmond' & lat == 37.95),  # we assume in Virginia
     !(City == 'Columbia' & lat == 38.95),  # we assume largest city
@@ -104,9 +105,8 @@ vol_cities <- vol_cities_geo %>%
     !(City == 'Portland' & lat == 43.66),  # we assume largest city
     !(City == 'Jacksonville' & lat == 34.76),  # we assume largest city
     !(City == 'Roseville' & lat == 42.51),  # we assume largest city
-    !(City == 'Jacksonville' & lat == 34.76),  # we assume largest city
-    
-  )
+  ) %>% 
+  select(-pop, -capital)
 
 # Quality checks:
 # vol_cities %>% filter(is.na(pop)) %>% View()
@@ -119,13 +119,69 @@ vol_cities <- vol_cities_geo %>%
 
 # --- Build graph
 
+current_proj <- vol_cities %>% filter(Project == "Kiron")
+
+# nodes list:
+city_count <- current_proj %>% group_by(City) %>% count()
+nodes <- current_proj %>%
+  left_join(city_count, by = 'City') %>%
+  select(City, x = long, y = lat, weight = n) %>%
+  unique()
+
+# build edge list:
+edges <- current_proj %>%
+  mutate(to = paste(nodes$City, collapse = ',')) %>%
+  separate_rows(to, sep = ',') %>%
+  unique() %>% # because we want only one edge each, we will add the weight later with city_count
+  select(from = City, to) %>%
+  filter(from != to) # we are only interested in drawing edges between cities
+  
+graph <- as_tbl_graph(edges, directed = FALSE, vertices = nodes$City)
+
+# create layout of graph to overaly on world map:
+# lay <- ggraph::layout_tbl_graph_manual(graph, 'manual', x = nodes$x, y = nodes$y)
+lay <- ggraph::create_layout(graph, layout = 'manual', x = nodes$x, y = nodes$y)
+
+lay$weight <- nodes$weight
+
+assert_that(nrow(lay) == nrow(nodes))
+
+
+# --- Define world map
+
+maptheme <- theme(panel.grid = element_blank()) +
+  theme(axis.text = element_blank()) +
+  theme(axis.ticks = element_blank()) +
+  theme(axis.title = element_blank()) +
+  theme(legend.position = "bottom") +
+  theme(panel.grid = element_blank()) +
+  theme(panel.background = element_rect(fill = "#596673")) +
+  theme(plot.margin = unit(c(0, 0, 0.5, 0), 'cm'))
+
+country_shapes <- geom_polygon(aes(x = long, y = lat, group = group),
+                               data = map_data('world'),
+                               fill = "#CECECE", color = "#515151",
+                               size = 0.15)
+mapcoords <- coord_fixed(xlim = c(-150, 180), ylim = c(-55, 80))
 
 
 # --- Draw network
 
 
+ggraph(lay) + 
+  country_shapes + 
+  geom_edge_link(alpha = 0.1) + 
+  geom_node_point(aes(size = log(weight)+1), 
+                  shape = 21,
+                  fill = "white", color = "black") + 
+  theme_graph() 
 
-
+# TO DO:
+#   - styling, look at my poster
+#   - better map projection? 
+#   - do it in a function, or better: try to facet it! 
+#   - better scale for the weight. less difference between small and large
+#   - update the data, use the project id
 
 
 
