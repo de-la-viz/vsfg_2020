@@ -125,7 +125,7 @@ vol_cities <- vol_cities_geo %>%
 current_proj <- vol_cities %>% filter(Project == "Kiron")
 
 # nodes list:
-city_count <- current_proj # %>% group_by(City) %>% count()
+city_count <- current_proj %>% group_by(City) %>% count()
 nodes <- current_proj %>%
   left_join(city_count, by = 'City') %>%
   select(City, x = long, y = lat, weight = n) %>%
@@ -174,31 +174,133 @@ my_theme <- function() {
 
 # --- Define world map
 
-world <- map_data("world")
+world <- map_data("world") %>% filter(region != "Antarctica")
 world <- world[world$region != "Antarctica",]
-country_shapes <- geom_polygon(aes(x = long, y = lat, group = group),
-                               data = world,
-                               fill = dark, color = light,
-                               size = 0.05)
 mapcoords <- coord_fixed(xlim = c(-150, 180), ylim = c(-55, 80))
+
 
 # --- Draw network
 
 ggraph(lay) + 
-  country_shapes +
-  coord_sf() +
-  # mapcoords +
+  geom_polygon(aes(x = long, y = lat, group = group),
+               data = world,
+               fill = 'black', color = 'black', # fill = dark, color = light,
+               size = 0.05) +
+  # coord_sf() +
+  mapcoords +
   geom_edge_link(alpha = 0.05, color = vfsg_green) + 
   geom_node_point(aes(size = weight), 
                   shape = 21,
-                  fill = vfsg_green, color = light,
+                  fill = vfsg_green, color = 'black',
                   show.legend = FALSE) + 
   my_theme() +
   scale_size_continuous(range = c(3,5))
 
 
+
+
+
+
+
+
+# -------------- TEEEEEEEEEEST ------
+
+library(sf)
+world <- map_data("world") %>% filter(region != "Antarctica")
+
+# project to Robinson, then get the coordinates for plotting:
+crs_robin <- "+proj=robin +lat_0=0 +lon_0=0 +x0=0 +y0=0"
+
+world_rob <- world %>% 
+  st_as_sf(coords = c("long", "lat"), crs = 4326) %>%
+  st_transform(crs = "+proj=robin") %>%
+  mutate(
+    lon = st_coordinates(.)[,1], 
+    lat = st_coordinates(.)[,2]
+  )
+
+nodes_rob <- nodes %>% 
+  st_as_sf(coords = c("x", "y"), crs = 4326) %>%
+  st_transform(crs = "+proj=robin") %>%
+  mutate(
+    x = st_coordinates(.)[,1], 
+    y = st_coordinates(.)[,2]
+  )
+
+# build edge list:
+edges <- current_proj %>%
+  mutate(to = paste(nodes_rob$City, collapse = ',')) %>%
+  separate_rows(to, sep = ',') %>%
+  unique() %>% # because we want only one edge each, we will add the weight later with city_count
+  select(from = City, to) %>%
+  filter(from != to) # we are only interested in drawing edges between cities
+
+graph <- as_tbl_graph(edges, directed = FALSE, vertices = nodes_rob$City)
+
+# create layout of graph to overaly on world map:
+# lay <- ggraph::layout_tbl_graph_manual(graph, 'manual', x = nodes$x, y = nodes$y)
+lay <- ggraph::create_layout(graph, layout = 'manual', x = nodes_rob$x, y = nodes_rob$y)
+
+lay$weight <- nodes$weight
+
+assert_that(nrow(lay) == nrow(nodes))
+
+
+
+# --- Draw network
+
+ggraph(lay) + 
+  geom_polygon(aes(x = lon, y = lat, group = group),
+               data = world_rob,
+               fill = 'black', color = 'white', # fill = dark, color = light,
+               size = 0.05) +
+  geom_sf(data = world_rob, aes(geometry = geometry))
+  # coord_sf() +
+  mapcoords +
+  geom_edge_link(alpha = 0.05, color = vfsg_green) + 
+  geom_node_point(aes(size = weight), 
+                  shape = 21,
+                  fill = vfsg_green, color = 'black',
+                  show.legend = FALSE) + 
+  my_theme() +
+  scale_size_continuous(range = c(3,5))
+  
+ggplot(world_rob) + 
+    # geom_polygon(data = world_rob,
+    #              aes(x = lon, y = lat, group = group),
+    #              fill = 'black', color = 'white', # fill = dark, color = light,
+    #              size = 0.05) +
+    geom_sf(aes(geometry = geometry), 
+            fill = 'black', color = 'black',
+            size = 0.05) +
+    geom_edge_link(data = lay, aes(x = x, y = y), alpha = 0.05, color = vfsg_green) +
+    geom_node_point(data = lay, aes(x = x, y = y, size = weight), 
+                    shape = 21,
+                    fill = vfsg_green, color = 'black',
+                    show.legend = FALSE) + 
+    my_theme() +
+    scale_size_continuous(range = c(3,5))
+
+ggraph(lay) + 
+  geom_edge_link(alpha = 0.05, color = vfsg_green) +
+  geom_node_point(aes(x = x, y = y, size = weight), 
+                  shape = 21,
+                  fill = vfsg_green, color = 'black',
+                  show.legend = FALSE) + 
+  scale_size_continuous(range = c(3,5)) + 
+  geom_sf(data = world_rob, aes(geometry = geometry), 
+          fill = 'black', color = 'white',
+          size = 0.01) +
+  my_theme()
+
+ggplot(data = world_rob, aes(geometry = geometry)) +
+  geom_sf(fill = 'black') +
+  my_theme()
+
+  
+
 # TO DO:
-#   - better map projection? -> cannot make Robinson work
+#   - better map projection? -> cannot make Robinson work -> need to project 'lay''s lat/lon
 #   - do it in a function, facetting not possible.
 #   - update the data, use the project id
 #   - plot in a for loop with project id, save each
@@ -334,4 +436,75 @@ ggraph(lay) +
 #   geom_edge_link(alpha = 0.1, data = lay)
 #   scale_colour_viridis_c(option = 'inferno') +
 #   scale_size_continuous(range = c(0,4))
+
+world_sf <- sf::st_as_sf(rworldmap::getMap(resolution = "low"))
+fribourg <- tibble(name = "Fribourg", lon = 7.1620, lat = 46.8065)
+
+crs_robin <- "+proj=robin +lat_0=0 +lon_0=0 +x0=0 +y0=0"
+# projection outline in long-lat coordinates
+lats <- c(90:-90, -90:90, 90)
+longs <- c(rep(c(180, -180), each = 181), 180)
+robin_outline <- 
+  list(cbind(longs, lats)) %>%
+  st_polygon() %>%
+  st_sfc(
+    crs = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
+  ) %>% 
+  st_transform(crs = crs_robin)
+
+# bounding box in transformed coordinates
+xlim <- c(-18494733, 18613795)
+ylim <- c(-9473396, 9188587)
+robin_bbox <- 
+  list(
+    cbind(
+      c(xlim[1], xlim[2], xlim[2], xlim[1], xlim[1]), 
+      c(ylim[1], ylim[1], ylim[2], ylim[2], ylim[1])
+    )
+  ) %>%
+  st_polygon() %>%
+  st_sfc(crs = crs_robin)
+# area outside the earth outline
+robin_without <- st_difference(robin_bbox, robin_outline)
+
+fribourg_rob <- fribourg %>% 
+  st_as_sf(coords = c("lon", "lat"), crs = 4326) %>%
+  st_transform(crs = "+proj=robin")
+
+lay_rob <- lay %>% 
+  st_as_sf(coords = c("x", "y"), crs = 4326) %>%
+  st_transform(crs = "+proj=robin")
+
+
+
+ggplot(world_sf) + 
+  geom_sf(fill = "#E69F00B0", color = "black", size = 0.5/.pt) + 
+  geom_sf(data = robin_without, fill = "white", color = NA) +
+  geom_sf(data = robin_outline, fill = NA, color = "grey30", size = 0.5/.pt) +
+  scale_x_continuous(name = NULL, breaks = seq(-120, 120, by = 60)) +
+  scale_y_continuous(name = NULL, breaks = seq(-60, 60, by = 30)) +
+  coord_sf(xlim = 0.95*xlim, ylim = 0.95*ylim, expand = FALSE, crs = crs_robin, ndiscr = 1000) + 
+  ggtitle("Robinson") +
+  theme_minimal() +
+  theme(
+    panel.background = element_rect(fill = "#56B4E950", color = "white", size = 1),
+    panel.grid.major = element_line(color = "gray30", size = 0.25)
+  ) + 
+  geom_point(data = fribourg_rob, aes(
+    x = st_coordinates(fribourg_rob)[1], 
+    y = st_coordinates(fribourg_rob)[2]), 
+    col = 'red', size = 4) +
+  geom_node_point(data = lay_rob, 
+                  aes(x = st_coordinates(lay_rob)[,1],
+                      y = st_coordinates(lay_rob)[,2], 
+                      size = weight), 
+                  shape = 21,
+                  fill = vfsg_green, color = 'black',
+                  show.legend = FALSE) +
+  geom_edge_link(data = lay_rob, alpha = 0.05, color = vfsg_green)
+  
+  
+
+
+
 
