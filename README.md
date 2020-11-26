@@ -11,7 +11,7 @@ The end goal is to:
 
 ## My Submissions
 
-I decided to highlight the global network of volunteers on a map. The network of the cities from every volunteers who partticipated in a project is drawn on a map, and the cities (nodes) are linked to highlight the network formed for the project. I designed three visualizations, which are similar, but which address different audiences.    
+I decided to highlight the global network of volunteers on a map. The network of the cities from every volunteer who participated in a project is drawn on a map, and the cities (nodes) are linked to highlight the network formed for the project. I designed three visualizations, which are similar, but which address different audiences.    
 
 The first visualization is for (future!) volunteers:
 ![for_volunteers](viz/vfsg_some_networks_for_volunteers.svg)
@@ -19,16 +19,17 @@ The first visualization is for (future!) volunteers:
 The second is for (future!) partners:
 ![for partners](viz/vfsg_some_networks_for_organizations.svg)
 
-The third, showing the networks formed for all the projects so far is for the Viz for Social Good nerds:
+The third, showing the networks formed for all the projects so far, is for the Viz for Social Good nerds:
 ![for vfsg nerds](viz/vfsg_networks.png)
 
+You can download all the visualizations for downloading in PDF, PNG, or SVG format [there](https://github.com/de-la-viz/vsfg_2020/tree/main/viz). Clone the repo and run [draw_networks.R](https://github.com/de-la-viz/vsfg_2020/blob/main/draw_networks.R) to reproduce the plots.  
 
 ## Design Choices
 
-The intent is both to show the extend of the network of data professional working together on a project, and the international, global, nature of the formed networks. Thus, the choice of showing the networks on a map. The maps are dark and only suggested, to let the network come first.  
+The intent is both to show the extent of the network of data professionals working together on a project, and the international, global, nature of the formed networks. Thus, the choice of showing the networks on a map. The maps are dark and only suggested, to let the network come first.  
 
 The green (or blue?) used is the one used on Viz for Social Good website, _#51C2C8_. The same for the font, _Libre Franklin_.  
 
-Initially, I built the full visualization (A4 format) with all the projects. However, it is quite explorative and does not necessarily convey the message so well. So I built the 2 smaller ones. The smaller selection of projects (the 7 with the most submissions), as well as the modified description text and title, are better are telling the story in my opinion, and thus at insipring new volunteers to participate or new charities to launch a project.  
+Initially, I built the full visualization (A4 format) with all the projects. However, it is quite explorative and does not necessarily convey the message so well. So, in a second step, I built the two smaller ones. The smaller selection of projects (the 7 with the most submissions), as well as the modified descriptions and titles, are better in telling the story in my opinion, and thus at inspiring new volunteers to participate or new charities to launch a project.  
 
 Thank you Viz for Social Good for putting up this project!
