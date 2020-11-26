@@ -17,10 +17,10 @@ The first visualization is for (future!) volunteers:
 ![for_volunteers](viz/vfsg_some_networks_for_volunteers.svg)
 
 The second is for (future!) partners:
-![for partners](vfsg_some_networks_for_organizations.svg)
+![for partners](viz/vfsg_some_networks_for_organizations.svg)
 
 The third, showing the networks formed for all the projects so far is for the Viz for Social Good nerds:
-![for vfsg nerds](vfsg_networks.svg)
+![for vfsg nerds](viz/vfsg_networks.svg)
 
 
 ## Design Choices
