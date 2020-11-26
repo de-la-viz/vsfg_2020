@@ -22,13 +22,13 @@ The second is for (future!) partners:
 The third, showing the networks formed for all the projects so far, is for the Viz for Social Good nerds:
 ![for vfsg nerds](viz/vfsg_networks.png)
 
-You can download all the visualizations for downloading in PDF, PNG, or SVG format [there](https://github.com/de-la-viz/vsfg_2020/tree/main/viz). Clone the repo and run [draw_networks.R](https://github.com/de-la-viz/vsfg_2020/blob/main/draw_networks.R) to reproduce the plots.  
+You can download all the visualizations in PDF, PNG, or SVG format [there](https://github.com/de-la-viz/vsfg_2020/tree/main/viz). Clone the repo and run [draw_networks.R](https://github.com/de-la-viz/vsfg_2020/blob/main/draw_networks.R) to reproduce the plots.  
 
 ## Design Choices
 
 The intent is both to show the extent of the network of data professionals working together on a project, and the international, global, nature of the formed networks. Thus, the choice of showing the networks on a map. The maps are dark and only suggested, to let the network come first.  
 
-The green (or blue?) used is the one used on Viz for Social Good website, _#51C2C8_. The same for the font, _Libre Franklin_.  
+The blue (or green?) used is the one used on Viz for Social Good website, _#51C2C8_. The same for the font, _Libre Franklin_.  
 
 Initially, I built the full visualization (A4 format) with all the projects. However, it is quite explorative and does not necessarily convey the message so well. So, in a second step, I built the two smaller ones. The smaller selection of projects (the 7 with the most submissions), as well as the modified descriptions and titles, are better in telling the story in my opinion, and thus at inspiring new volunteers to participate or new charities to launch a project.  
 
