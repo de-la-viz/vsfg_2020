@@ -1,17 +1,18 @@
 # Draw the networks.
 
-library(tidyverse)
-library(rio)
-library(glue)
-library(lubridate)
-library(stringr)
-library(maps)
-library(tidygraph)
-library(ggraph)
-library(cowplot)
-library(ggtext) # box of wrapped text
+library(tidyverse) # data manipulation and plot
+library(rio) # load data
+library(maps) # world cities localization
+library(tidygraph) # to create graph/network
+library(ggraph) # to plot the graph/network
+library(glue) # "paste character" for plot titles and saving
+library(lubridate) # transform date to good format. In the end only used for sorting
+library(stringr) # used to clean some character data
+library(cowplot) # to display all the network plots in one page
+library(ggtext) # add box of wrapped text on plot (title, description, call to action, credits)
 
 
+# --- Data Loading
 
 subm <- rio::import("data/vfsg_submissions.csv") %>% 
   rename(Project = `Name of charity/Project`,
@@ -40,7 +41,6 @@ projects_info <- subm %>% # handle the orgs with which 2 projects were made:
       TRUE ~ Project
     )
   )
-
 
 # to avoid a more complicated geolocalization, we just use this dataset
 world_cities <- maps::world.cities %>% rename(City = name, Country = country.etc)
@@ -152,14 +152,15 @@ vol_cities <- vol_cities_geo %>%
 # We now have a dataframe with all the volunteers city and their lat/lon data.
 
 
-# some basic stats;
+# some basic stats (used in the description);
 n_cities <- vol_cities$City %>% n_distinct
 n_countries <- vol_cities$Country %>% n_distinct
 n_volunteers <- subm$Volunteer %>% n_distinct
 
+
 # --- Define the theme for the plots (background and text)
 
-light <- "white" # color
+light <- "white" # color of text and plot titles
 dark <- "#383e42" # color of background
 vfsg_green <- "#51C2C8"
 my_font <- "Libre Franklin" 
@@ -191,7 +192,7 @@ mapcoords <- coord_fixed(xlim = c(-150, 180), ylim = c(-55, 80)) # crop the eart
 # --- Draw network
 
 draw_network <- function(project_name){
-  # draw the network for one project.
+  # a fct to draw the network for one project.
   
   # get project info:
   n_submissions <- projects_info %>% filter(Project == project_name) %>% .$n_submission
@@ -235,23 +236,25 @@ draw_network <- function(project_name){
     my_theme() +
     scale_size_continuous(range = c(min_dot, max_dot)) + 
     labs(title = glue("{project_name}"),
-         subtitle = glue("{n_submissions} visulizations submitted in {p_date}"))
+         subtitle = glue("{n_submissions} visualizations designed in {p_date}"))
   
-  return(ggnet)
+  return(ggnet) # returns the plot, a gg object
 }
 
 # to test:
 # p1 <- draw_network("Stanford University")
 # p6 <- draw_network("Bridges to Prosperity")
 
-# draw all plots
+
+# --- Draw all plots:
 all_proj_names <- vol_cities$Project %>% unique()
 all_plots = list()
 for (proj in all_proj_names) {
+  # loop through all projects and store their plot in a lis
   ggnet <- draw_network(proj)
   all_plots <- append(all_plots, list(ggnet))
 }
-
+# arrange all the plots in a grid:
 main_plot <- cowplot::plot_grid(plotlist = all_plots, ncol = 4)
 
 # add some space around, where we will have the title and a description:
@@ -261,62 +264,69 @@ main_plot <- main_plot +
     plot.background = element_rect(color = dark, fill = dark)
   )
 
-# add title and description
-main_plot <- main_plot + 
-  geom_textbox(
-    data = tibble(
-      x = 0.005,
-      y = 1.02,
-      label = "<span style='font-size:9.8pt;'>viz for social good — The Growth of a Network</span><br><br><br>Viz for Social Good empowers mission-driven organizations to harness the power of data visualization for social change. Since January 2017, passionate data professionals collaborated with 29 different social organizations on 31 data visualization projects to tackle critical social issues. For each project, <span style='color:#51C2C8;'>an international network of volunteers originating from numerous cities</span> around the globe is created. Today, the  Viz for Social Good network consists of 324 volunteers from 120+ cities in 33 countries."
-    ),
-    aes(x = x, y = y, label = label),
-    inherit.aes = F,
-    family = my_font,
-    color = light,
-    size = 2.2,
-    lineheight = 1.8,
-    width = unit(180, "mm"),
-    fill = NA,
-    box.colour = NA,
-    hjust = 0,
-    vjust = 0
-  ) + # credentials
-  geom_textbox(
-    data = tibble(
-      x = 0.5 - 25/210,
-      y = 0,
-      label = "Data: Viz for Social Good — Design: François Delavy — @f_delavy"
-    ),
-    aes(x = x, y = y, label = label),
-    inherit.aes = F,
-    family = my_font,
-    color = light,
-    size = 1.5,
-    lineheight = 1.7,
-    width = unit(50, "mm"),
-    fill = NA,
-    box.colour = NA,
-    hjust = 0,
-    vjust = 2
-  ) + # get involved
-  geom_textbox(
-    data = tibble(
-      x = 0.8,
-      y = 0.04,
-      label = "... and the next project?<br>Join the network! On<br>vizforsocialgood.com"
-    ),
-    aes(x = x, y = y, label = label),
-    inherit.aes = F,
-    family = my_font,
-    color = light,
-    size = 2.2,
-    lineheight = 2,
-    width = unit(50, "mm"),
-    fill = NA,
-    box.colour = NA,
-    hjust = 0,
-    vjust = 0
-  )
+# define title and description
+title_label = "<span style='font-size:9.8pt;'>viz for social good — The Growth of a Network</span><br><br><br>Viz for Social Good empowers mission-driven organizations to harness the power of data visualization for social change. Since January 2017, passionate data professionals collaborated with 29 different social organizations on 31 data visualization projects to tackle critical social issues. For each project, <span style='color:#51C2C8;'>an international network of volunteers originating from numerous cities</span> around the globe is formed. Today, the  Viz for Social Good network consists of 324 volunteers from 120+ cities in 33 countries."
+my_title <- geom_textbox(
+  data = tibble(
+    x = 0.005,
+    y = 1.02,
+    label = title_label
+  ),
+  aes(x = x, y = y, label = label),
+  inherit.aes = F,
+  family = my_font,
+  color = light,
+  size = 2.2,
+  lineheight = 1.8,
+  width = unit(180, "mm"),
+  fill = NA,
+  box.colour = NA,
+  hjust = 0,
+  vjust = 0
+)
+# define credentials
+cred_label <- "Data: Viz for Social Good — Design: François Delavy — Contact: @f_delavy"
+credentials <- geom_textbox(
+  data = tibble(
+    x = 0.5 - 30/210,
+    y = 0,
+    label = cred_label
+  ),
+  aes(x = x, y = y, label = label),
+  inherit.aes = F,
+  family = my_font,
+  color = light,
+  size = 1.5,
+  lineheight = 1.7,
+  width = unit(60, "mm"),
+  fill = NA,
+  box.colour = NA,
+  hjust = 0,
+  vjust = 2
+)
+# define call to acion
+cta_label <- "... and the next project?<br>Join the network! <br>vizforsocialgood.com"
+call_to_action <- geom_textbox(
+  data = tibble(
+    x = 0.8,
+    y = 0.04,
+    label = cta_label
+  ),
+  aes(x = x, y = y, label = label),
+  inherit.aes = F,
+  family = my_font,
+  color = light,
+  size = 2.2,
+  lineheight = 2,
+  width = unit(50, "mm"),
+  fill = NA,
+  box.colour = NA,
+  hjust = 0,
+  vjust = 0
+)
+
+# Draw them on the plot:
+main_plot <- main_plot + my_title + credentials + call_to_action
 
 
 # Save as PDF A4, portrait:
@@ -348,9 +358,216 @@ ggsave(filename = glue::glue("{path}.png"),
 
 
 
+# --- Draw smaller version, with the 7 largest networks only:
+
+# --- Select the 7 largest projects (in term of nb of submissions:
+less_proj_names <- projects_info %>% arrange(-n_submission) %>% head(7) %>% 
+  arrange(ProjectDate) %>% .$Project 
+less_plots = list()
+for (proj in less_proj_names) {
+  # loop through all projects and store their plot in a list
+  ggnet <- draw_network(proj)
+  less_plots <- append(less_plots, list(ggnet))
+}
+# arrange all the plots in a grid:
+smaller_plot <- cowplot::plot_grid(plotlist = less_plots, ncol = 4)
+
+# add some space around, where we will have the title and a description:
+smaller_plot <- smaller_plot + 
+  theme(
+    plot.margin = margin(t = 30, r = 5, b = 5, l = 10, unit = "mm"),
+    plot.background = element_rect(color = dark, fill = dark)
+  )
+
+
+
+# --- we first focus the first viz on attracting volunteers:
+
+# need to re-define title and description, to change the story, slightly:
+title_label = "<span style='font-size:9.8pt;'>Viz for Social Good — An International Network</span><br><br>Viz for Social Good empowers mission-driven organizations to harness the power of data visualization for social change. Since January 2017, more than 320 passionate data professionals from 120+ cities in 33 countries collaborated with 29 different social organizations on 31 data visualization projects tackling critical social issues.<br>Participating in a project is joining <span style='color:#51C2C8;'>an international network of volunteers from numerous cities around the globe</span>. A selection:"
+
+# Add title, description, cred and CTA on the plot:
+volunteer_plot <- smaller_plot + # Title:
+  geom_textbox(
+    data = tibble(
+      x = 0.006,
+      y = 1.03,
+      label = title_label
+    ),
+    aes(x = x, y = y, label = label),
+    inherit.aes = F,
+    family = my_font,
+    color = light,
+    size = 2.2,
+    lineheight = 1.8,
+    width = unit(190, "mm"),
+    fill = NA,
+    box.colour = NA,
+    hjust = 0,
+    vjust = 0
+  ) + # Credentials:
+  geom_textbox(
+    data = tibble(
+      x = 0.5 - 30/210,
+      y = 0,
+      label = cred_label
+    ),
+    aes(x = x, y = y, label = label),
+    inherit.aes = F,
+    family = my_font,
+    color = light,
+    size = 1.5,
+    lineheight = 1.7,
+    width = unit(60, "mm"),
+    fill = NA,
+    box.colour = NA,
+    hjust = 0,
+    vjust = 1
+  ) + # CTA
+  geom_textbox(
+    data = tibble(
+      x = 0.8,
+      y = 0.2,
+      label = cta_label
+    ),
+    aes(x = x, y = y, label = label),
+    inherit.aes = F,
+    family = my_font,
+    color = light,
+    size = 2.2,
+    lineheight = 2,
+    width = unit(50, "mm"),
+    fill = NA,
+    box.colour = NA,
+    hjust = 0,
+    vjust = 0
+  )
+
+# Save as PDF:
+path <- "viz/vfsg_some_networks_for_volunteers"
+width = 210
+height = 100
+units = "mm"
+ggsave(filename = glue::glue("{path}.pdf"), 
+       plot = volunteer_plot,
+       device = cairo_pdf,
+       width = width, 
+       height = height, 
+       units = units)
+# embed the output font in the PDF:
+extrafont::embed_fonts(glue::glue("{path}.pdf")) # takes time, so comment when testing
+
+# Save as SVG:
+ggsave(filename = glue::glue("{path}.svg"), 
+       width = width,
+       height = height, 
+       units = units)
+
+# Save as PNG:
+ggsave(filename = glue::glue("{path}.png"), 
+       width = width,
+       height = height, 
+       units = units,
+       dpi = 400)
+
+
+# --- ... and the second on attracting organizations:
+# (only the description in 'title_label' is slighly modified)
+
+# need to re-define title and description, to change the story, slightly:
+title_label = "<span style='font-size:9.8pt;'>Viz for Social Good — An International Network</span><br><br>Viz for Social Good empowers mission-driven organizations to harness the power of data visualization for social change. Since January 2017, more than 320 passionate data professionals from 120+ cities in 33 countries collaborated with 29 different social organizations on 31 data visualization projects tackling critical social issues.<br>Collaborating with Viz for Social Good for a project is benefitting from <span style='color:#51C2C8;'>an international network of volunteers from numerous cities around the globe</span>. A selection:"
+# and the Call to Action:
+cta_label <- "... and the next project?<br>Contact us!<br>vizforsocialgood.com"
+
+# Add title, description, cred and CTA on the plot:
+orga_plot <- smaller_plot + # Title:
+  geom_textbox(
+    data = tibble(
+      x = 0.006,
+      y = 1.03,
+      label = title_label
+    ),
+    aes(x = x, y = y, label = label),
+    inherit.aes = F,
+    family = my_font,
+    color = light,
+    size = 2.2,
+    lineheight = 1.8,
+    width = unit(190, "mm"),
+    fill = NA,
+    box.colour = NA,
+    hjust = 0,
+    vjust = 0
+  ) + # Credentials:
+  geom_textbox(
+    data = tibble(
+      x = 0.5 - 30/210,
+      y = 0,
+      label = cred_label
+    ),
+    aes(x = x, y = y, label = label),
+    inherit.aes = F,
+    family = my_font,
+    color = light,
+    size = 1.5,
+    lineheight = 1.7,
+    width = unit(60, "mm"),
+    fill = NA,
+    box.colour = NA,
+    hjust = 0,
+    vjust = 1
+  ) + # CTA
+  geom_textbox(
+    data = tibble(
+      x = 0.8,
+      y = 0.2,
+      label = cta_label
+    ),
+    aes(x = x, y = y, label = label),
+    inherit.aes = F,
+    family = my_font,
+    color = light,
+    size = 2.2,
+    lineheight = 2,
+    width = unit(50, "mm"),
+    fill = NA,
+    box.colour = NA,
+    hjust = 0,
+    vjust = 0
+  )
+
+# Save as PDF:
+path <- "viz/vfsg_some_networks_for_organizations"
+width = 210
+height = 100
+units = "mm"
+ggsave(filename = glue::glue("{path}.pdf"), 
+       plot = orga_plot,
+       device = cairo_pdf,
+       width = width, 
+       height = height, 
+       units = units)
+# embed the output font in the PDF:
+extrafont::embed_fonts(glue::glue("{path}.pdf")) # takes time, so comment when testing
+
+# Save as SVG:
+ggsave(filename = glue::glue("{path}.svg"), 
+       width = width,
+       height = height, 
+       units = units)
+
+# Save as PNG:
+ggsave(filename = glue::glue("{path}.png"), 
+       width = width,
+       height = height, 
+       units = units,
+       dpi = 400)
+
+
+
 # -------------- TRY TO PLOT WITH ROBINSON PROJECTION, BUT FAILING MISERABLY: ------
 # All the code below is for my failed attempts at using a Robinson projection...
-# So let's store them, because who knows...
+# So let's store them, even if it's a mess, because who knows...
 
 # 
 # library(rgeos)    # package rgeos required for finding out which hole belongs to which exterior ring
