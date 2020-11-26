@@ -11,12 +11,12 @@ The end goal is to:
 
 ## My Submissions
 
-I decided to highlight the global network of volunteers on a map. The network of the cities from every volunteer who participated in a project is drawn on a map, and the cities (nodes) are linked to highlight the network formed for the project. I designed three visualizations, which are similar, but which address different audiences.    
+I decided to highlight the global network of volunteers on a map. The network of the cities from every volunteer who participated in a project is drawn on a map, and the cities (nodes) are linked to highlight the network formed for the project. I designed three visualizations, which are similar, but which address different audiences. They all show the same data, it is just the framing of the title, description and call to action that vary.      
 
-The first visualization is for (future!) volunteers:
+The first visualization is for (future) volunteers:
 ![for_volunteers](viz/vfsg_some_networks_for_volunteers.svg)
 
-The second is for (future!) partners:
+The second is for (future) partners:
 ![for partners](viz/vfsg_some_networks_for_organizations.svg)
 
 The third, showing the networks formed for all the projects so far, is for the Viz for Social Good nerds:
@@ -30,6 +30,4 @@ The intent is both to show the extent of the network of data professionals worki
 
 The blue (or green?) used is the one used on Viz for Social Good website, _#51C2C8_. The same for the font, _Libre Franklin_.  
 
-Initially, I built the full visualization (A4 format) with all the projects. However, it is quite explorative and does not necessarily convey the message so well. So, in a second step, I built the two smaller ones. The smaller selection of projects (the 7 with the most submissions), as well as the modified descriptions and titles, are better in telling the story in my opinion, and thus at inspiring new volunteers to participate or new charities to launch a project.  
-
-Thank you Viz for Social Good for putting up this project!
+Initially, I built the full visualization (A4 format) with all the projects. However, it is quite explorative, crowded, and does not necessarily convey the message so well. So, in a second step, I built the two smaller ones. The smaller selection of projects (the 7 with the most submissions), as well as the modified descriptions and titles, are better in telling the story in my opinion, and thus at inspiring new volunteers to participate or new charities to launch a project.   
