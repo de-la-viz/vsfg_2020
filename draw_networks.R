@@ -160,8 +160,8 @@ n_volunteers <- subm$Volunteer %>% n_distinct
 
 # --- Define the theme for the plots (background and text)
 
-light <- "white" # color of text and plot titles
-dark <- "#383e42" # color of background
+light <- "black" # "white" # color of text and plot titles
+dark <- "white" # "#383e42" # color of background
 vfsg_green <- "#51C2C8"
 my_font <- "Libre Franklin" 
 min_dot <- 1 # min size of nodes
@@ -224,7 +224,7 @@ draw_network <- function(project_name){
   ggnet <- ggraph(lay) + 
     geom_polygon(aes(x = long, y = lat, group = group),
                  data = world,
-                 fill = 'black', color = 'black', # fill = dark, color = light,
+                 fill = 'white', color = 'black', # fill = dark, color = light,
                  size = 0.05) +
     # coord_sf() +
     mapcoords +
@@ -330,7 +330,7 @@ main_plot <- main_plot + my_title + credentials + call_to_action
 
 
 # Save as PDF A4, portrait:
-path <- "viz/vfsg_networks"
+path <- "viz/vfsg_networks_light"
 width = 210
 height = 297
 units = "mm"
@@ -444,7 +444,7 @@ volunteer_plot <- smaller_plot + # Title:
   )
 
 # Save as PDF:
-path <- "viz/vfsg_some_networks_for_volunteers"
+path <- "viz/vfsg_some_networks_for_volunteers_light"
 width = 210
 height = 100
 units = "mm"
@@ -537,7 +537,7 @@ orga_plot <- smaller_plot + # Title:
   )
 
 # Save as PDF:
-path <- "viz/vfsg_some_networks_for_organizations"
+path <- "viz/vfsg_some_networks_for_organizations_light"
 width = 210
 height = 100
 units = "mm"
