@@ -13,10 +13,10 @@ The end goal is to:
 
 I decided to highlight the global network of volunteers on a map. The network of the cities from every volunteer who participated in a project is drawn on a map, and the cities (nodes) are linked to highlight the network formed for the project. I designed three visualizations, which are similar, but which address different audiences. They all show the same data, it is just the framing of the title, description and call to action that vary.      
 
-The first visualization is for (future) volunteers. Participating in a project is joining <span style='color:#51C2C8;'>an international network of volunteers from numerous cities around the globe</span>.
+The first visualization is for (future) volunteers. Participating in a project is joining an international network of volunteers from numerous cities around the globe!
 ![for_volunteers](viz/vfsg_some_networks_for_volunteers.svg)
 
-The second is for (future) partners. Collaborating with Viz for Social Good for a project is benefitting from <span style='color:#51C2C8;'>an international network of volunteers from numerous cities around the globe</span>!
+The second is for (future) partners. Collaborating with Viz for Social Good for a project is benefitting from an international network of volunteers from numerous cities around the globe!
 ![for partners](viz/vfsg_some_networks_for_organizations.svg)
 
 The third, showing the networks formed for all the projects so far, is for the Viz for Social Good nerds:
