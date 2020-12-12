@@ -1,4 +1,4 @@
-# Viz for Social Good project on Viz for Social Good
+# A Viz for Social Good project on Viz for Social Good
 
 [Viz for Social Good](https://www.vizforsocialgood.com/) helps mission-driven organizations to promote social good and understand their own data through beautiful and informative data visualization; visualizations made by volunteers, like me.  
 
